@@ -1,0 +1,185 @@
+{
+	"info": {
+		"_postman_id": "bd7198c1-11ac-47a1-89cc-36245c30834f",
+		"name": "backend_image_processing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "29649838"
+	},
+	"item": [
+		{
+			"name": "get_user_profile",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJraWQiOiJwNjJcL1VrZ2xQQ2JkOXk1ZmFDNGVnalE5bmV0XC9CUmhcL1RzTnBuenc3Ynl3PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLXNvdXRoZWFzdC0xLmFtYXpvbmF3cy5jb21cL2FwLXNvdXRoZWFzdC0xX0VJMHlKYzduWiIsImNvZ25pdG86dXNlcm5hbWUiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJvcmlnaW5fanRpIjoiYTZkYmZmYTQtYjI2MC00M2M2LWI4NWMtMzFiYjIyZGM3MGU2IiwiYXVkIjoiMjQ2ZWZjNGh2dG5xY291YzI4M3BrNWdqbGIiLCJldmVudF9pZCI6IjZjNTQzNTdkLWI4M2ItNDNjNy1hNjg5LWQzZGJmOWU5ODljNCIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzQwNzU1Mjg4LCJleHAiOjE3NDA3NTg4ODgsImlhdCI6MTc0MDc1NTI4OCwianRpIjoiZWRjMWRjZDItMmVjMi00YjY0LTk5MWEtZDY5ZTY4MzY2ZTIxIiwiZW1haWwiOiJjbGF1ZGlhLnlhbzIwMTJAZ21haWwuY29tIn0.jBDr1U-nXm9hlWPDkGuetMX0GVJ85joPINt3lWxFTPzT4AOLZMCWqLaYTaeu-xcqoUEnzCaK26IqRO39nhr4s2NsOln0HyhnOMtBD39QskvsP4R_-SeQrIVdnk7PCAkie7BezGPzj2UWhr1uyCI3FZ7wqpGRxfgL-Te3OBYA0NpD36jkWbGghct2ceoraCB3-HOfmzfEQ0pQyE54XzwxZFs8NtQsJCOkmxUQ1l9wdDgolAS5TqLuI4HErdvfA0x7AmB2kRkiCVIqnZnnmGrYxSWfGnQIU6TfZUBWg3LNyiSae4aTUlRpz3CUx52gYMP1lONQ6G7zdFy2rltVkqcccA"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8000/users/profile"
+			},
+			"response": []
+		},
+		{
+			"name": "get remindee_profile",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJraWQiOiJwNjJcL1VrZ2xQQ2JkOXk1ZmFDNGVnalE5bmV0XC9CUmhcL1RzTnBuenc3Ynl3PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLXNvdXRoZWFzdC0xLmFtYXpvbmF3cy5jb21cL2FwLXNvdXRoZWFzdC0xX0VJMHlKYzduWiIsImNvZ25pdG86dXNlcm5hbWUiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJvcmlnaW5fanRpIjoiYTZkYmZmYTQtYjI2MC00M2M2LWI4NWMtMzFiYjIyZGM3MGU2IiwiYXVkIjoiMjQ2ZWZjNGh2dG5xY291YzI4M3BrNWdqbGIiLCJldmVudF9pZCI6IjZjNTQzNTdkLWI4M2ItNDNjNy1hNjg5LWQzZGJmOWU5ODljNCIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzQwNzU1Mjg4LCJleHAiOjE3NDA3NTg4ODgsImlhdCI6MTc0MDc1NTI4OCwianRpIjoiZWRjMWRjZDItMmVjMi00YjY0LTk5MWEtZDY5ZTY4MzY2ZTIxIiwiZW1haWwiOiJjbGF1ZGlhLnlhbzIwMTJAZ21haWwuY29tIn0.jBDr1U-nXm9hlWPDkGuetMX0GVJ85joPINt3lWxFTPzT4AOLZMCWqLaYTaeu-xcqoUEnzCaK26IqRO39nhr4s2NsOln0HyhnOMtBD39QskvsP4R_-SeQrIVdnk7PCAkie7BezGPzj2UWhr1uyCI3FZ7wqpGRxfgL-Te3OBYA0NpD36jkWbGghct2ceoraCB3-HOfmzfEQ0pQyE54XzwxZFs8NtQsJCOkmxUQ1l9wdDgolAS5TqLuI4HErdvfA0x7AmB2kRkiCVIqnZnnmGrYxSWfGnQIU6TfZUBWg3LNyiSae4aTUlRpz3CUx52gYMP1lONQ6G7zdFy2rltVkqcccA"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8000/users/profile"
+			},
+			"response": []
+		},
+		{
+			"name": "update-profile",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJraWQiOiJwNjJcL1VrZ2xQQ2JkOXk1ZmFDNGVnalE5bmV0XC9CUmhcL1RzTnBuenc3Ynl3PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLXNvdXRoZWFzdC0xLmFtYXpvbmF3cy5jb21cL2FwLXNvdXRoZWFzdC0xX0VJMHlKYzduWiIsImNvZ25pdG86dXNlcm5hbWUiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJvcmlnaW5fanRpIjoiYjRiNTQ3NWUtZTkzMC00MDQ2LTgxNGMtMDgyYWE5MGExNzJiIiwiYXVkIjoiMjQ2ZWZjNGh2dG5xY291YzI4M3BrNWdqbGIiLCJldmVudF9pZCI6ImM3MmQ3ZjYwLWM2ZjktNDYzYS05MTg5LWE3Nzc0NWU2NGJhZSIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzQwNzU5NDgwLCJleHAiOjE3NDA3NjMwODAsImlhdCI6MTc0MDc1OTQ4MCwianRpIjoiZDQ2Zjc2NDEtOGFkOC00ZWM0LTk2ZTctNTRlYWJjNTg2YmE3IiwiZW1haWwiOiJjbGF1ZGlhLnlhbzIwMTJAZ21haWwuY29tIn0.jsSsxPrNAmffJpEUPOsxFkJltdY7AVhHmvRL3Pn3PFOVfhVf1yCTWMi5eCjH55BcctLqqPE6iaIjgE7-yNmTpUH_6PlnjXy2cBt5awK1O_xBCCv_pOMnLkEg-PVzc1XVGzZFMyDLqxLw7QNDKdBvW3TDNcIRHf097qn7FTq-2gDDlPk1Zg5YMKE8jXg_bxQG29oUSQ_vjVYb5i83eGvZk-X863027Jef94HMOciyqwWC_4j3m0-dGs3yM2TJ02Kr5JMEMr0Vqgr-vY6gFwt7LDUTBOPqyG154MdVnYo-i9w3iek39ignPkHel3BiKMO7xQGDpDQ97DbIxrqjjQKwvA"
+					}
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "nick_name",
+							"value": "cccc",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "just a test",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "30",
+							"type": "text"
+						},
+						{
+							"key": "phone_number",
+							"value": "+12-31245678",
+							"type": "text"
+						},
+						{
+							"key": "avatar",
+							"type": "file",
+							"src": "/Users/evansun/Documents/default_profile_2.jpg"
+						}
+					]
+				},
+				"url": "http://localhost:8000/users/update-profile"
+			},
+			"response": []
+		},
+		{
+			"name": "identify",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJraWQiOiJwNjJcL1VrZ2xQQ2JkOXk1ZmFDNGVnalE5bmV0XC9CUmhcL1RzTnBuenc3Ynl3PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLXNvdXRoZWFzdC0xLmFtYXpvbmF3cy5jb21cL2FwLXNvdXRoZWFzdC0xX0VJMHlKYzduWiIsImNvZ25pdG86dXNlcm5hbWUiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJvcmlnaW5fanRpIjoiYjRiNTQ3NWUtZTkzMC00MDQ2LTgxNGMtMDgyYWE5MGExNzJiIiwiYXVkIjoiMjQ2ZWZjNGh2dG5xY291YzI4M3BrNWdqbGIiLCJldmVudF9pZCI6ImM3MmQ3ZjYwLWM2ZjktNDYzYS05MTg5LWE3Nzc0NWU2NGJhZSIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzQwNzU5NDgwLCJleHAiOjE3NDA3NjMwODAsImlhdCI6MTc0MDc1OTQ4MCwianRpIjoiZDQ2Zjc2NDEtOGFkOC00ZWM0LTk2ZTctNTRlYWJjNTg2YmE3IiwiZW1haWwiOiJjbGF1ZGlhLnlhbzIwMTJAZ21haWwuY29tIn0.jsSsxPrNAmffJpEUPOsxFkJltdY7AVhHmvRL3Pn3PFOVfhVf1yCTWMi5eCjH55BcctLqqPE6iaIjgE7-yNmTpUH_6PlnjXy2cBt5awK1O_xBCCv_pOMnLkEg-PVzc1XVGzZFMyDLqxLw7QNDKdBvW3TDNcIRHf097qn7FTq-2gDDlPk1Zg5YMKE8jXg_bxQG29oUSQ_vjVYb5i83eGvZk-X863027Jef94HMOciyqwWC_4j3m0-dGs3yM2TJ02Kr5JMEMr0Vqgr-vY6gFwt7LDUTBOPqyG154MdVnYo-i9w3iek39ignPkHel3BiKMO7xQGDpDQ97DbIxrqjjQKwvA"
+					}
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "nick_name",
+							"value": "cccc",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "just a test",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "30",
+							"type": "text"
+						},
+						{
+							"key": "phone_number",
+							"value": "+12-31245678",
+							"type": "text"
+						},
+						{
+							"key": "avatar",
+							"type": "file",
+							"src": "/Users/evansun/Documents/default_profile_2.jpg"
+						}
+					]
+				},
+				"url": "http://localhost:8000/users/update-profile"
+			},
+			"response": []
+		},
+		{
+			"name": "upload_image",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJraWQiOiJwNjJcL1VrZ2xQQ2JkOXk1ZmFDNGVnalE5bmV0XC9CUmhcL1RzTnBuenc3Ynl3PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLXNvdXRoZWFzdC0xLmFtYXpvbmF3cy5jb21cL2FwLXNvdXRoZWFzdC0xX0VJMHlKYzduWiIsImNvZ25pdG86dXNlcm5hbWUiOiI4OWVhYjVmYy00MDQxLTcwNzAtNWUxZi04OTViM2U2YzRlZDYiLCJvcmlnaW5fanRpIjoiOTBiNTFlOGYtN2E5Mi00ZDFiLThhYmUtOTU4YTE0MzQxNjcxIiwiYXVkIjoiMjQ2ZWZjNGh2dG5xY291YzI4M3BrNWdqbGIiLCJldmVudF9pZCI6ImZlNDJiM2E4LTcwNjQtNGU5NC05Y2ZiLTI0NzRjMmQ0NTZkYyIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzQwNzkwOTEzLCJleHAiOjE3NDA3OTQ1MTMsImlhdCI6MTc0MDc5MDkxMywianRpIjoiNDQwYjdkZjItNmY2Ny00NmEwLWE1MzAtNzBhNjE3NGI4N2YxIiwiZW1haWwiOiJjbGF1ZGlhLnlhbzIwMTJAZ21haWwuY29tIn0.UaSL1jizBgdUh_61PHWGiadhXnrD0YXmLDcH5Om_bz9bqLE-hixA_6yWLTBt8E9HjOCT9qjduHI_qWqPWdzwDYChTmvkZcszx2kaKb-9erSmQnqW8YZ1396GDC2p9b6IiMFcu2HBy2uufWbz_9f2rOuzgyLBMTEm7sOgkDxm5zPLEo0GwAiUKNt3587XpI1yVsFBzDjRL9GuAVwhGldLb0hR51U3-_5_d4HdTHxKJrvETSi_lAsvWP7B0spF3C7foCq2iMNpGQ-JsRTpROZ8xt39mJuHvBXpavr1ypMP39xRxCMR5x_rNGEK0J5afoWeoTBi1NPyPYnzGjxLbA56QQ"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "person_name",
+							"value": "Karren",
+							"type": "text"
+						},
+						{
+							"key": "relationship",
+							"value": "daughter",
+							"type": "text"
+						},
+						{
+							"key": "summary",
+							"value": "go to shopping",
+							"type": "text"
+						},
+						{
+							"key": "files",
+							"type": "file",
+							"src": [
+								"/Users/evansun/Documents/dataset/train/n000002/0001_01.jpg",
+								"/Users/evansun/Documents/dataset/train/n000002/0013_01.jpg"
+							]
+						}
+					]
+				},
+				"url": "http://localhost:8000/image/upload"
+			},
+			"response": []
+		}
+	]
+}

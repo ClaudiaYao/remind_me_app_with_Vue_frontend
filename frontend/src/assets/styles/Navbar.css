@@ -1,0 +1,39 @@
+/* Navbar styles */
+.navbar {
+  background-color: #F3F4F6;
+  padding: 10px 20px;
+  width: 100%;
+  /* Ensure it takes the full width */
+  position: fixed;
+  /* Make it stick to the top */
+  top: 0;
+  /* Stick to the top of the page */
+  left: 0;
+  /* Align to the left of the page */
+  z-index: 1000;
+  /* Ensure it's on top of other content */
+}
+
+.navbar-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-start;
+  /* Align items to the left */
+}
+
+.navbar-item {
+  color: white;
+  margin-right: 20px;
+}
+
+.navbar-link {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.navbar-link:hover {
+  text-decoration: underline;
+}
