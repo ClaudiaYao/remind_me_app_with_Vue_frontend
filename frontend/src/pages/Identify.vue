@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="flex justify-center items-center mb-6">
-      <h1 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-4xl font-bold">Do You Know this Person? 🔎</h1>
+      <h1 class="text-2xl sm:text-base md:text-lg lg:text-xl font-bold">Do You Know this Person? 🔎</h1>
     </div>
 
     <Instruction v-if="userProfileStore.isNewUser" />
@@ -14,7 +14,7 @@
 
         <ChooseSingleImage :chosenImage="chosenImage" @update:chosenImage="onImageChange" />
 
-        <div class="flex justify-center mt-6">
+        <div class="flex justify-center mb-6">
           <button
             class="flex w-64 justify-center rounded-md bg-orange-500 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600"
             :disabled="!chosenImage"
@@ -28,25 +28,24 @@
           {{ msg }}
         </p>
 
-        <div v-if="identifiedPerson?.image" class="mt-6">
-          <h2 class="text-3xl font-bold">This person is:</h2>
-          <div class="flex items-center mt-4 space-x-6">
+        <div v-if="identifiedPerson?.image" class="mt-4">
+          <div class="flex items-center justify-center mb-6 space-x-6">
             <img
               :src="identifiedPerson.image"
               :alt="identifiedPerson.person"
-              width="300"
-              height="300"
+              width="200"
+              height="200"
               class="rounded-full"
             />
             <div>
-              <h3 class="text-2xl font-bold">{{ identifiedPerson.person }}</h3>
+              <h3 class="text-xl font-bold">{{ identifiedPerson.person }}</h3>
               <p>{{ identifiedPerson.summary }}</p>
             </div>
           </div>
         </div>
 
         <div v-else-if="identifiedPerson" class="mt-4">
-          <h3 class="text-3xl font-bold">{{ identifiedPerson.person }}</h3>
+          <h3 class="text-xl font-bold">{{ identifiedPerson.person }}</h3>
           <p class="text-2xl font-semibold">{{ identifiedPerson.summary }}</p>
         </div>
       </div>
@@ -59,7 +58,7 @@ import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserProfileStore } from "@/stores/UserProfileStore";
-import { identify, type IdentifyResponse, type RemindeeInfo } from "@/services/identify";
+import { identify, isInferenceComplete, type IdentifyResponse, type RemindeeInfo } from "@/services/identify";
 import { check_model_exist } from "@/services/upload_train";
 
 import TrainAIModel from "@/components/TrainAIModel.vue";
@@ -100,25 +99,76 @@ const onImageChange = (file: File | null) => {
   chosenImage.value = file;
 };
 
-// Submit image to identify
-const handleImageSubmit = async () => {
+// polling helper
+const pollInterval = 3000; // 3 seconds
+let startTime = Date.now();
+const timeout = 20000; // 20 seconds
+let pollingTimer: number | null = null;
+
+const pollInferenceStatus = async (job_id: string) => {
+  if (Date.now() - startTime > timeout) {
+    msg.value = "Timed out. Please try again.";
+    return;
+  }
+
+  if (pollingTimer) clearTimeout(pollingTimer);
+
   try {
-    if (chosenImage.value) {
-      const response: IdentifyResponse = await identify(authStore.token, chosenImage.value);
-      if (response.data) {
-        if (response.data.person === "NA") {
-          identifiedPerson.value = null;
+    const result = await isInferenceComplete(authStore.token, job_id);
+
+    switch (result.status) {
+      case "complete":
+        if (result.person === "unknown") {
+          msg.value = "The person could not be recognized.";
         } else {
-          identifiedPerson.value = response.data;
+          if (result.data) identifiedPerson.value = result.data;
+          else identifiedPerson.value = null;
         }
-      } else {
-        identifiedPerson.value = null;
-      }
-      msg.value = null;
+        msg.value = null; // Clear status message
+        break;
+
+      case "queued":
+        msg.value = "Queue... ⏳";
+        pollingTimer = window.setTimeout(() => pollInferenceStatus(job_id), pollInterval);
+        break;
+      case "start":
+        msg.value = "Still processing... ⏳";
+        pollingTimer = window.setTimeout(() => pollInferenceStatus(job_id), pollInterval);
+        break;
+
+      case "abort":
+        msg.value = "Processing failed. Please try again.";
+        break;
+      case "timeout":
+        msg.value = "queueing is too long. The job expires. Please try again.";
+        break;
+      default:
+        msg.value = "Unexpected response. Please try again.";
+        break;
     }
   } catch (error) {
-    console.error(error);
-    msg.value = "There was a problem identifying the image. Please try again.";
+    console.error("Error during polling:", error);
+    msg.value = "Error checking status. Please retry.";
+  }
+};
+
+// Submit image to identify
+const handleImageSubmit = async () => {
+  identifiedPerson.value = null;
+  msg.value = "Sending request to queue...";
+
+  try {
+    if (!chosenImage.value) return;
+
+    const response: IdentifyResponse = await identify(authStore.token, chosenImage.value);
+
+    if (response.status === "queued" && response.job_id) {
+      msg.value = "Queue... Please wait ⏳";
+      pollInferenceStatus(response.job_id);
+    }
+  } catch (err) {
+    console.error(err);
+    msg.value = "There was a problem submitting the image.";
   }
 };
 </script>

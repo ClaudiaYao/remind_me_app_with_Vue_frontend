@@ -23,12 +23,14 @@ let timer = null;
 watch(
   () => jobStore.jobStatus,
   (newStatus) => {
-    if (newStatus === "Completed" || newStatus === "Error") {
+    if (newStatus == "start" || newStatus == "queued") {
+      jobStore.isVisible.value = true;
+    } else if (newStatus === "complete" || newStatus === "terminate" || newStatus === "abort") {
       jobStore.isVisible.value = true;
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         jobStore.isVisible.value = false;
-      }, 10000); // 10 seconds
+      }, 5000); // 5 seconds
     }
   }
 );
@@ -37,18 +39,22 @@ onUnmounted(() => {
   if (timer) clearTimeout(timer);
 });
 
-const isInProgress = computed(() => jobStore.jobStatus === "InProgress");
-const isCompleted = computed(() => jobStore.jobStatus === "Completed");
+const isInProgress = computed(() => jobStore.jobStatus === "start");
+const isCompleted = computed(() => jobStore.jobStatus === "complete");
+const isPending = computed(() => jobStore.jobStatus === "queued");
 
 const bgColor = computed(() => {
   if (isInProgress.value) return "bg-yellow-400";
   if (isCompleted.value) return "bg-green-500";
+  if (isPending.value) return "bg-orange-300";
+
   return "bg-red-400";
 });
 
 const message = computed(() => {
   if (isInProgress.value) return "Processing your images... Please wait.";
   if (isCompleted.value) return "Job completed successfully!";
+  if (isPending.value) return "System is busy. Your job is queueing. Wait for a second.";
   return "Something went wrong with your job. Please try again.";
 });
 </script>

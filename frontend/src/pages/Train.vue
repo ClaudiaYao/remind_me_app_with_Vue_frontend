@@ -26,11 +26,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from "vue";
+import { ref, watchEffect, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useJobStore } from "@/stores/jobStore";
-import { trigger_train, isTrainingComplete } from "@/services/upload_train";
+import { trigger_train } from "@/services/upload_train";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -47,18 +47,58 @@ watchEffect(() => {
   }
 });
 
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+  () => jobStore.jobStatus,
+  (newStatus) => {
+    if (!timer) {
+      // Start timeout when first status is received
+      timer = setTimeout(() => {
+        errorMsg.value = "Timeout: Training took too long. Please try again.";
+        infoMsg.value = "";
+        // Optional: trigger abort logic or UI reset
+      }, 600000); // 600 seconds
+    }
+
+    if (newStatus === "complete") {
+      clearTimeout(timer!);
+      timer = null;
+      infoMsg.value = "Your AI Assistant has finished training. Now you could identify persons.";
+      errorMsg.value = "";
+    } else if (["abort", "error", "terminate", "cancelled", "timeout"].includes(newStatus)) {
+      clearTimeout(timer!);
+      timer = null;
+      infoMsg.value = "";
+
+      switch (newStatus) {
+        case "queued":
+          infoMsg.value = "Queue... ⏳";
+          break;
+        case "start":
+          infoMsg.value = "Still processing... ⏳";
+          break;
+        case "abort":
+          errorMsg.value = "Processing failed. Please try again.";
+          break;
+        case "timeout":
+          errorMsg.value = "queueing is too long. The job expires. Please try again.";
+          break;
+        default:
+          errorMsg.value = "Unexpected response. Please try again.";
+          break;
+      }
+    }
+  },
+  { immediate: true }
+);
+
 async function handleTrain() {
   try {
     const jobId = await trigger_train(authStore.token);
     console.log(jobId);
     jobStore.jobId = jobId;
     infoMsg.value = "Your AI Assistant is in training process. Please wait for a while...";
-    const isTrainComplete = await isTrainingComplete(authStore.token, jobId);
-    if (!isTrainComplete) {
-      errorMsg.value = "Training is not complete. Please try again later.";
-      return;
-    }
-    infoMsg.value = "Your AI Assistant has finished training. Now you could begin identifying your remindees.";
     errorMsg.value = "";
     isModelUpdated.value = true;
   } catch (error) {

@@ -38,10 +38,11 @@ export async function trigger_train(token: string): Promise<string> {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     });
 
+    console.log(response.data);
     if (response.status === 200) {
-      const jobName = response.data?.data?.["training-job-name"];
-      if (jobName) {
-        return jobName;
+      const job_id = response.data?.job_id;
+      if (job_id) {
+        return job_id;
       }
       throw new Error("Training job name not found in response");
     }
@@ -59,14 +60,14 @@ export async function trigger_train(token: string): Promise<string> {
   }
 }
 
-export async function isTrainingComplete(token: string, jobId: string): Promise<boolean> {
+export async function isTrainingComplete(token: string, jobId: string): Promise<string> {
   try {
-    const response = await axios.get(`${API_BASE_URL}/operation/check-training-status?job_name=${jobId}`, {
+    const response = await axios.get(`${API_BASE_URL}/operation/check-training-status?job_id=${jobId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (response.status === 200 && response.data && typeof response.data.status === "string") {
-      return response.data.status === "Completed";
+    if (response.status === 200 && response.data) {
+      return response.data.status;
     } else {
       throw new Error("Unexpected response format");
     }

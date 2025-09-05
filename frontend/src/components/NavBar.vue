@@ -129,7 +129,6 @@ const navLinks = [
 const dropdownItems = [
   { to: "/profile", label: "My Profile" },
   { to: "/instruction", label: "Instruction" },
-  { to: "/about", label: "About Us" },
 ];
 
 const mobileLinks = [...navLinks, { to: "/about", label: "About" }];
