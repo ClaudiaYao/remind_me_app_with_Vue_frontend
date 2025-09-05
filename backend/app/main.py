@@ -9,7 +9,7 @@ import certifi
 from services import runpod_client, queue_manager, redis_utils, config
 import asyncio
 import redis.asyncio as redis
-from  app.services import config
+from  services import config
 
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 
