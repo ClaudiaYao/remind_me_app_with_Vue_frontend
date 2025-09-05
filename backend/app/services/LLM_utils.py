@@ -1,12 +1,13 @@
 
 from openai import OpenAI
 from sqlalchemy import func
-from app.services import database, config
+from services import database, config
 from sqlalchemy.sql import func
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import select
+from services import s3_utils
 
 class LLM_Generate_Summary:
     def __init__(self, api_key: str, base_url: str = "https://api.deepinfra.com/v1/openai",
@@ -108,6 +109,18 @@ def generate_summary_for_remindee(user_id, remindee_name, relationship, accumula
         db.close()
         
         
-        
+def get_summary(user_id, remindee_name):
+    relationship, accumulated_summary = get_accumulated_descriptions_for_remindee(user_id, remindee_name)
+    ai_summary, image_obj_key  = generate_summary_for_remindee(user_id, remindee_name, relationship, accumulated_summary)
+
+    image_obj_key = f"{user_id}/{remindee_name}/{image_obj_key}"
+    presigned_url = s3_utils.get_image_url_from_s3(image_obj_key)['presigned_url']
+    
+    remindee_info = {"name": remindee_name,
+                     "relationship": relationship.strip(),
+                     "accumulated_summary": accumulated_summary.strip(),
+                     "ai_summary": ai_summary,
+                     "image_url": presigned_url}
+    return remindee_info
         
         

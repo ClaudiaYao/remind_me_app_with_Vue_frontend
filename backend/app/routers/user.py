@@ -6,9 +6,10 @@ from services import s3_utils, LLM_utils, config
 from routers import utils
 from services import redis_utils
 import json
-import redis 
+import redis.asyncio as redis
 from services import database
 from typing import List
+from sqlalchemy import func
 
 
 router = APIRouter(
@@ -18,11 +19,9 @@ router = APIRouter(
 )
 
 @router.get("/login")
-async def login(user: dict = Depends(congnito_auth.get_current_user), db: Session = Depends(database.get_db), redis_client: redis.Redis = Depends(redis_utils.get_redis)):
-    print("enter login procedure")
+async def login(user: dict = Depends(congnito_auth.get_current_user), db: Session = Depends(database.get_db), redis_depend: redis.Redis = Depends(redis_utils.get_redis)):
     user_id = user['sub']
     
-    print("user_id", user_id)
     user = db.query(database.UserSummary).filter(database.UserSummary.user_id == user_id).first()
     if not user:
         # 2. Insert new user
@@ -31,7 +30,7 @@ async def login(user: dict = Depends(congnito_auth.get_current_user), db: Sessio
         db.commit()
         db.refresh(new_user)
 
-    redis_client.expire(f"user:{user_id}", 3600)
+    await redis_utils.redis_client.expire(f"user:{user_id}", 3600)
     
     
     return utils.ApiResponse(
@@ -39,9 +38,9 @@ async def login(user: dict = Depends(congnito_auth.get_current_user), db: Sessio
             message="user logins successfully")
     
 @router.post("/logout")
-async def logout(user: dict = Depends(congnito_auth.get_current_user), db: Session = Depends(database.get_db), redis_client: redis.Redis = Depends(redis_utils.get_redis)):
+async def logout(user: dict = Depends(congnito_auth.get_current_user), db: Session = Depends(database.get_db), redis_depend: redis.Redis = Depends(redis_utils.get_redis)):
     user_id = user['sub']
-    redis_client.expire(f"user:{user_id}", 300)
+    await redis_utils.redis_client.expire(f"user:{user_id}", 300)
     
     return utils.ApiResponse(
             success=True,
@@ -51,21 +50,20 @@ async def logout(user: dict = Depends(congnito_auth.get_current_user), db: Sessi
 @router.get("/profile")
 async def get_profile(retrieve_new_profile: bool, skip: int=Query(0), limit: int=Query(5), user: dict = Depends(congnito_auth.get_current_user), 
                 db: Session = Depends(database.get_db), 
-                redis_client: redis.Redis = Depends(redis_utils.get_redis)):
+                redis_depend: redis.Redis = Depends(redis_utils.get_redis)):
     try:
         """Fetch user profile from database"""
         user_id = user["sub"] 
-        print("user_id:", user_id)
         
         if not retrieve_new_profile:
             # retrieve the records from redis which match a certain pattern: remindee:<user_id>, and return those records to front end
             pattern = f"user:{user_id}:*"
-            matching_keys = list(redis_client.scan_iter(pattern))  # Get all matching keys
+            matching_keys = list(await redis_utils.redis_client.scan_iter(pattern))  # Get all matching keys
 
             if len(matching_keys) > 0:
                 data = []
                 for key in matching_keys:
-                    value = redis_client.get(key)  # Retrieve value from Redis
+                    value = await redis_utils.redis_client.get(key)  # Retrieve value from Redis
                     if value:
                         data.append(json.loads(value))  # Convert JSON string back to dictionary
             
@@ -74,9 +72,8 @@ async def get_profile(retrieve_new_profile: bool, skip: int=Query(0), limit: int
                 message="User profile fetched successfully",
                 data = {"remindee": data})
         
-        print("skp:", skip)
         # if no cache remindee data, retrieve from the Postgresql database
-        if config.USE_POSTGRESQL=="1":
+        if config.USE_POSTGRESQL==1:
             batch_remindees = db.query(database.UserRemindee)\
             .filter(database.UserRemindee.user_id == user_id)\
             .order_by(database.UserRemindee.person_name)\
@@ -128,7 +125,7 @@ async def get_profile(retrieve_new_profile: bool, skip: int=Query(0), limit: int
             # check redis cache data and set expiry
             user_redis_id = f"remindee:{user_id}:{record.person_name}"
 
-            redis_client.setex(user_redis_id, 2700, remindee.model_dump_json())
+            await redis_utils.redis_client.setex(user_redis_id, 2700, remindee.model_dump_json())
         
         return utils.ApiResponse(
             success=True,
@@ -142,13 +139,13 @@ async def get_profile(retrieve_new_profile: bool, skip: int=Query(0), limit: int
 @router.get("/user-profile")
 async def get_user_profile(user: dict = Depends(congnito_auth.get_current_user), 
                 db: Session = Depends(database.get_db), 
-                redis_client: redis.Redis = Depends(redis_utils.get_redis)):
+                redis_depend: redis.Redis = Depends(redis_utils.get_redis)):
     try:
         """Fetch user profile from database"""
         user_id = user["sub"] 
         
-        user_data = redis_client.get(f"user:{user_id}")
-
+        user_data = await redis_utils.redis_client.get(f"user:{user_id}")
+        
         # if the user profile is not in Redis, get it from postgresql database and get presigned url for avatar image, then
         # save the user profile to Redis
         if user_data is None:
@@ -166,7 +163,7 @@ async def get_user_profile(user: dict = Depends(congnito_auth.get_current_user),
             redis_user_data = {"user_summary": utils.map_to_user_profile_response(db_user).model_dump_json(),
                         "email": user['email'],
                         "avatar_url": avatar_url}
-            redis_client.setex(f"user:{user_id}", 2700, json.dumps(redis_user_data))
+            await redis_utils.redis_client.setex(f"user:{user_id}", 2700, json.dumps(redis_user_data))
         else:
             # If user profile is in Redis, load info from Redis
             parsed_data = json.loads(user_data)
@@ -195,7 +192,7 @@ async def update_user_profile(nick_name: str = Form(...),
                          user: dict = Depends(congnito_auth.get_current_user), 
                          avatar: UploadFile = File(None),
                          db: Session = Depends(database.get_db),
-                         redis_client: redis.Redis = Depends(redis_utils.get_redis)):
+                         redis_depend: redis.Redis = Depends(redis_utils.get_redis)):
     
     try: 
         user_id = user["sub"]
@@ -216,7 +213,6 @@ async def update_user_profile(nick_name: str = Form(...),
         if phone_number is not None:
             setattr(db_user, "phone_number", phone_number)
             
-        print("reach here")
         if avatar:
             try:
                 # Create the file name for the image
@@ -232,14 +228,11 @@ async def update_user_profile(nick_name: str = Form(...),
             except Exception as e:
                 raise HTTPException(status_code=500, detail="Error uploading image to S3")
         
-        print("reach here before commit")
         db.commit()
         # db.refresh(db_user)
         
-        print("done here")
         # to avoid unconsistent information, delete the user info from Redis
-        redis_client.delete(f"user:{user_id}")
-        print("redis done")
+        await redis_utils.redis_client.delete(f"user:{user_id}")
         return utils.ApiResponse(
             success=True,
             message="User profile updated successfully")
@@ -322,7 +315,6 @@ async def display_remindee_info(
         for remindee_record in remindee_records:
             img_obj_key = remindee_record.image_object_key
             
-            print("remindee_record:")
             print(remindee_record.image_object_key, remindee_record.person_name, remindee_record.summary, remindee_record.relationship)
         
             record = utils.UserRemindee(image_object_key=img_obj_key, 
@@ -369,8 +361,6 @@ async def change_remindee_info(
                                                             person_name=person_name, 
                                                             image_object_key=image_object_url).first()
             
-            print("remindee_upt_record:")
-            print(remindee_upt_record)
             if record:
                 if remindee_upt_record.action == "delete":
                     # delete the image on the S3

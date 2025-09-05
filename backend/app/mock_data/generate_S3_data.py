@@ -51,7 +51,6 @@ for person in persons:
             local_file_path = os.path.join(person_folder, file_name)
             
             if os.path.isfile(local_file_path) and file_name.lower().endswith(('jpg', 'jpeg', 'png', 'gif')):
-                print(f"{user_id}/{person_name}/{file_name}")
                 num += 1
                 s3_object_key = f"{user_id}/{person_name}/{file_name}"  # Set object key in S3
                 s3_client.upload_file(local_file_path, bucket_name, s3_object_key)

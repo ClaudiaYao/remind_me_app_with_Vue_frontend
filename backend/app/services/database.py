@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, PrimaryKeyConstra
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from app.services import config
+from services import config
 
 # Database Engine & Session
 # toggle betwewen postgresql and sqlite databases

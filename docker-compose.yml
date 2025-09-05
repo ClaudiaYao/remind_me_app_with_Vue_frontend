@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      context: ./backend # The folder that will be the "build context"
+      dockerfile: dockerfile # Name of Dockerfile inside that folder
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped

@@ -2,49 +2,67 @@ from fastapi import FastAPI
 import uvicorn
 import sys
 from fastapi.middleware.cors import CORSMiddleware
-from routers import operation
-from routers import user
-import redis
+from routers import operation, user
 from contextlib import asynccontextmanager
 import ssl
 import certifi
+from services import runpod_client, queue_manager, redis_utils, config
+import asyncio
+import redis.asyncio as redis
 
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 
-
 host = "localhost"
-port = 8000
-# redis_client: redis.Redis | None = None
+port = 8001
 
 origins = [
     # "http://remind-me-frontend.s3-website-ap-southeast-1.amazonaws.com",
     "http://localhost:8000",
     # "https://3.0.1.90:8000",
     "capacitor://localhost",  # Capacitor apps
+    config.RUNPOD_URL,
+    "http://0.0.0.0:8000",
     "http://localhost:5173",
 ]
+
+async def job_scheduler():
+    print("start job schedular...")
+    while True:
+        if await runpod_client.is_idle():  # check RunPod idle
+            job = await queue_manager.get_next_job()  # get from Redis or memory
+            if job:
+                await runpod_client.submit_job(job)
+                
+        await asyncio.sleep(2)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)     
     try:
-        redis_client.ping()
+        await redis_utils.redis_client.ping()
         print("✅ Connected to Redis")
-        redis_client.close()  # Close the connection when done
-    except redis.ConnectionError:
+        await redis_utils.redis_client.close()  # Close the connection when done
+    except redis_utils.redis_client.ConnectionError:
         print("❌ Redis not available at startup, Are you sure that redis server is running? use redis-sererve command to start redis server")
         sys.exit(1)
-        
+
+    # ✅ Job loop background task
+    app.state.job_task = asyncio.create_task(job_scheduler())
+    print("🚀 Job loop started")
+    
     yield
     try:
-        redis_client.ping()
+        await redis_utils.redis_client.ping()
         print("🔌 Closing Redis connection...")
-        redis_client.close()  # Do NOT use await here
-        redis_client.connection_pool.disconnect()  # Do NOT use await here
+        await redis_utils.redis_client.close()  # Do NOT use await here
+        await redis_utils.redis_client.connection_pool.disconnect()  # Do NOT use await here
         print("✅ Redis connection closed")
     except redis.ConnectionError:
         print("⚠️ Redis already disconnected or unreachable")
+        
+    # ✅ Cancel job loop task
+    app.state.job_task.cancel()
+    print("🛑 Job loop task cancelled")
         
     
     
@@ -63,9 +81,15 @@ app.add_middleware(
 )
 
 
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to FastAPI!"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host=host, port=port)
+
+
+# run: 
+# uvicorn main:app --reload
+# uvicorn main:app --host localhost --port 8001 --reload
