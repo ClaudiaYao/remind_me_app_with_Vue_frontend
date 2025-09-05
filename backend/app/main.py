@@ -9,6 +9,7 @@ import certifi
 from services import runpod_client, queue_manager, redis_utils, config
 import asyncio
 import redis.asyncio as redis
+from  app.services import config
 
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 
@@ -20,10 +21,14 @@ origins = [
     "http://localhost:8000",
     # "https://3.0.1.90:8000",
     "capacitor://localhost",  # Capacitor apps
-    config.RUNPOD_URL,
     "http://0.0.0.0:8000",
     "http://localhost:5173",
 ]
+
+if config.FRONTEND_URL_S3:
+    origins.append(config.FRONTEND_URL_S3)
+if config.RUNPOD_URL:
+    origins.append(config.RUNPOD_URL)
 
 async def job_scheduler():
     print("start job schedular...")

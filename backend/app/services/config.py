@@ -43,4 +43,5 @@ API_KEY = os.getenv("API_KEY")
 RUNPOD_URL = "http://0.0.0.0:8000"
 # RUNPOD_URL = "https://5n8f9dz09pal1t-8000.proxy.runpod.net"
 REDIS_HOST=os.getenv("REDIS_HOST")
-
+FRONTEND_URL_S3=os.getenv("FRONTEND_URL_S3")
+RUNPOD_URL=os.getenv("RUNPOD_URL", "")
