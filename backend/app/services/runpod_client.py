@@ -2,6 +2,9 @@
 import httpx
 from services import config, redis_utils
 
+if not config.RUNPOD_URL:
+    raise ValueError("Missing value for secret_ai in .env")
+
 async def is_idle():
     async with httpx.AsyncClient() as client:
         resp = await client.get(f"{config.RUNPOD_URL}/status")
