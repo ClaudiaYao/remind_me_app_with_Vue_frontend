@@ -15,7 +15,7 @@ echo "✅ Docker Compose installed."
 
 
 # Step 2: Clone project repository
-REPO_PATH="$HOME/remind_me_app_with_Vue_frontend"
+REPO_PATH="$HOME/remind_me_app_with_Vue_frontend/backend"
 
 if [ -d "$REPO_PATH" ]; then
     cd "$REPO_PATH" || exit 1
