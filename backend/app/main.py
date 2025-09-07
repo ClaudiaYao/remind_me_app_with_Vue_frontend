@@ -17,11 +17,7 @@ host = "localhost"
 port = 8001
 
 origins = [
-    # "http://remind-me-frontend.s3-website-ap-southeast-1.amazonaws.com",
-    "http://localhost:8000",
-    # "https://3.0.1.90:8000",
     "capacitor://localhost",  # Capacitor apps
-    "http://0.0.0.0:8000",
     "http://localhost:5173",
 ]
 
