@@ -132,7 +132,7 @@ const pollInferenceStatus = async (job_id: string) => {
         pollingTimer = window.setTimeout(() => pollInferenceStatus(job_id), pollInterval);
         break;
       case "start":
-        msg.value = "Still processing... ⏳";
+        msg.value = "Your AI assistant begins processing... ⏳";
         pollingTimer = window.setTimeout(() => pollInferenceStatus(job_id), pollInterval);
         break;
 

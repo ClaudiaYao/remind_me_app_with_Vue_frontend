@@ -164,7 +164,7 @@ async def check_inference_status(job_id: str, user: Dict = Depends(congnito_auth
     print("status:", status)
     
     if "complete" in status:
-        redis_utils.redis_client.hset(job_id, "status", "complete")
+        await redis_utils.redis_client.hset(job_id, "status", "complete")
         remindee_name = status.split(":")[1].strip()
         if remindee_name == "unknown":
             return {"status": "complete", "person": "unknown"}
@@ -178,7 +178,14 @@ async def check_inference_status(job_id: str, user: Dict = Depends(congnito_auth
                         "image": inference_result['image_url']}
                     }
     # if the job is still pending or starts, but time has expired, then set status to abort
-    expires_at = await redis_utils.redis_client.hget(job_id, "expires_at")        
+    expires_at_str = await redis_utils.redis_client.hget(job_id, "expires_at")
+
+    if expires_at_str is not None:
+        expires_at = int(expires_at_str)
+    else:
+        expires_at = None  # or handle missing case 
+    
+    print("expires_at:", expires_at)      
     if time.time() > expires_at and (status == "start" or status=="queued"):
         await redis_utils.redis_client.hset(job_id, "sattus", "timeout") 
         return {"status": "timeout", "person": None}
@@ -223,7 +230,13 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
     status = response['Body'].read().decode('utf-8')
     
     # if the job is still pending or starts, but time has expired, then set status to abort
-    expires_at = redis_utils.redis_client.hget(job_id, "expires_at")        
+    expires_at_str = await redis_utils.redis_client.hget(job_id, "expires_at")
+
+    if expires_at_str is not None:
+        expires_at = int(expires_at_str)
+    else:
+        expires_at = None  # or handle missing case 
+    
     if time.time() > expires_at and (status == "start" or status=="queued"):
         await redis_utils.redis_client.hset(job_id, "sattus", "timeout") 
         return {"status": "timeout"}

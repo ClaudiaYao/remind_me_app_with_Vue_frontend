@@ -364,7 +364,8 @@ async def change_remindee_info(
             if record:
                 if remindee_upt_record.action == "delete":
                     # delete the image on the S3
-                    s3_utils.s3_image_client.delete_object(Bucket=config.S3_IMAGE_STORAGE_BUCKET_NAME, Key=f"{user_id}/{person_name}/{image_object_url}")
+                    s3_utils.s3_client.delete_object(Bucket=config.S3_IMAGE_STORAGE_BUCKET_NAME, Key=f"{user_id}/{person_name}/{image_object_url}")
+                    print("deleted from s3")
                     # delete the record in database
                     db.delete(record)
                     

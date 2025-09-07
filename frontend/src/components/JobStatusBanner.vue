@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div
     v-if="jobStore.jobId && jobStore.jobStatus && isVisible && jobStore.jobStatus !== 'Logout'"
     :class="`${bgColor} text-gray-600 py-2 px-4 text-center shadow-md`"
@@ -8,7 +8,34 @@
       <span>{{ message }}</span>
     </div>
   </div>
+</template> -->
+
+<template>
+  <transition name="slide-up">
+    <div
+      v-if="jobStore.jobId && jobStore.jobStatus && isVisible"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-lg shadow-lg text-black"
+      :class="bgColor"
+    >
+      <div class="flex items-center gap-2">
+        <Loader2 v-if="isInProgress" class="animate-spin w-4 h-4" />
+        <span>{{ message }}</span>
+      </div>
+    </div>
+  </transition>
 </template>
+
+<style>
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+</style>
 
 <script setup>
 import { ref, watch, onUnmounted, computed } from "vue";
@@ -24,12 +51,11 @@ watch(
   () => jobStore.jobStatus,
   (newStatus) => {
     if (newStatus == "start" || newStatus == "queued") {
-      jobStore.isVisible.value = true;
-    } else if (newStatus === "complete" || newStatus === "terminate" || newStatus === "abort") {
-      jobStore.isVisible.value = true;
+      isVisible.value = true;
+    } else if ((newStatus === "complete" || newStatus === "terminate" || newStatus === "abort") && isVisible) {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        jobStore.isVisible.value = false;
+        isVisible.value = false;
       }, 5000); // 5 seconds
     }
   }
@@ -41,20 +67,26 @@ onUnmounted(() => {
 
 const isInProgress = computed(() => jobStore.jobStatus === "start");
 const isCompleted = computed(() => jobStore.jobStatus === "complete");
-const isPending = computed(() => jobStore.jobStatus === "queued");
+const isPending = computed(() => jobStore.jobStatus === "queued" || jobStore.jobStatus === "idle");
+const isFailed = computed(
+  () =>
+    jobStore.jobStatus === "terminate" ||
+    jobStore.jobStatus === "error" ||
+    jobStore.jobStatus === "abort" ||
+    jobStore.jobStatus === "timeout"
+);
 
 const bgColor = computed(() => {
-  if (isInProgress.value) return "bg-yellow-400";
+  if (isInProgress.value) return "bg-green-400";
   if (isCompleted.value) return "bg-green-500";
-  if (isPending.value) return "bg-orange-300";
-
-  return "bg-red-400";
+  if (isPending.value) return "bg-yellow-300";
+  if (isFailed.value) return "bg-red-300";
 });
 
 const message = computed(() => {
   if (isInProgress.value) return "Processing your images... Please wait.";
   if (isCompleted.value) return "Job completed successfully!";
-  if (isPending.value) return "System is busy. Your job is queueing. Wait for a second.";
+  if (isPending.value) return "Your job is queueing. Wait for a second.";
   return "Something went wrong with your job. Please try again.";
 });
 </script>
