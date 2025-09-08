@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div>
     <p>You have not trained your AI assistant.</p>
     <button @click="handleTraining" :disabled="isTraining">
@@ -23,12 +23,14 @@ const jobStore = useJobStore();
 const handleTraining = async () => {
   try {
     jobStore.resetJobStatus();
+    msg.value = "";
     const jobId = await trigger_train(authStore.token);
     console.log(jobId);
     isTraining.value = true;
     jobStore.jobId = jobId;
   } catch (error) {
     console.error(error);
+    isTraining.value = false;
     msg.value = "An error has occurred. Please try again later.";
   }
 };
@@ -45,4 +47,4 @@ watch(
     }
   }
 );
-</script>
+</script> -->

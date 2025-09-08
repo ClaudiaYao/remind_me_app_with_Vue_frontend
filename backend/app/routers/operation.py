@@ -11,7 +11,6 @@ import botocore
 from pathlib import Path
 import redis.asyncio as redis
 
-timeout_seconds = 20000
 
 router = APIRouter(
     prefix="/operation",
@@ -105,7 +104,7 @@ async def identify(
             "status": "queued",
             "image_object_key": object_key,
             "created_at": int(time.time()),
-            "expires_at": int(time.time()) + timeout_seconds
+            "expires_at": int(time.time()) + int(config.INFERENCE_TIME_OUT_SEC)
         }
 
     
@@ -155,13 +154,13 @@ async def check_inference_status(job_id: str, user: Dict = Depends(congnito_auth
         object_key = f"{user_id}/result/inference/" + job_id
         # check if the key exists or not
         s3_utils.s3_client.head_object(Bucket = config.S3_MODEL_WEIGHT_BUCKET_NAME, Key=object_key)
+        response = s3_utils.s3_client.get_object(Bucket=config.S3_MODEL_WEIGHT_BUCKET_NAME, Key=object_key)
+        status = response['Body'].read().decode('utf-8')
+        print("status:", status)
+    
     except botocore.exceptions.ClientError as e:
         print("the inference job is in queueing status.")
-        return {"status": "queued", "person": None}
-    
-    response = s3_utils.s3_client.get_object(Bucket=config.S3_MODEL_WEIGHT_BUCKET_NAME, Key=object_key)
-    status = response['Body'].read().decode('utf-8')
-    print("status:", status)
+        status = "queued"
     
     if "complete" in status:
         await redis_utils.redis_client.hset(job_id, "status", "complete")
@@ -186,7 +185,7 @@ async def check_inference_status(job_id: str, user: Dict = Depends(congnito_auth
         expires_at = None  # or handle missing case 
     
     print("expires_at:", expires_at)      
-    if time.time() > expires_at and (status == "start" or status=="queued"):
+    if time.time() > expires_at and (status == "start" or status=="queued" or status=="idle"):
         await redis_utils.redis_client.hset(job_id, "sattus", "timeout") 
         return {"status": "timeout", "person": None}
              
@@ -196,6 +195,8 @@ async def check_inference_status(job_id: str, user: Dict = Depends(congnito_auth
     elif status == "abort":
         await redis_utils.redis_client.hset(job_id, "status", "abort")
         return {"status": "abort", "person": None}
+
+    return {"status": "queued", "person": None}
 
 
 # @router.get("/check-inference-status")
@@ -222,12 +223,14 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
         object_key = f"{user_id}/result/train/" + job_id
         # check if the key exists or not
         s3_utils.s3_client.head_object(Bucket = config.S3_MODEL_WEIGHT_BUCKET_NAME, Key=object_key)
-    except botocore.exceptions.ClientError as e:
-        print(f"{e}")
-        return {"status": "queued"}
+        
+        response = s3_utils.s3_client.get_object(Bucket=config.S3_MODEL_WEIGHT_BUCKET_NAME, Key=object_key)
+        status = response['Body'].read().decode('utf-8')
     
-    response = s3_utils.s3_client.get_object(Bucket=config.S3_MODEL_WEIGHT_BUCKET_NAME, Key=object_key)
-    status = response['Body'].read().decode('utf-8')
+    except botocore.exceptions.ClientError as e:
+        # if it could not get the object id on S3, assuming it is queueing
+        print(f"could not find the {object_key} on S3. Might be in the queue.")
+        status = "queued"
     
     # if the job is still pending or starts, but time has expired, then set status to abort
     expires_at_str = await redis_utils.redis_client.hget(job_id, "expires_at")
@@ -237,7 +240,10 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
     else:
         expires_at = None  # or handle missing case 
     
-    if time.time() > expires_at and (status == "start" or status=="queued"):
+    print(time.time())
+    print(expires_at)
+    print(status)
+    if time.time() > expires_at and (status == "start" or status=="queued" or status=="idle"):
         await redis_utils.redis_client.hset(job_id, "sattus", "timeout") 
         return {"status": "timeout"}
         
@@ -253,6 +259,8 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
         await redis_utils.redis_client.hset(job_id, "status", "terminate")
         return {"status": "terminate"}
     
+    return {"status": "queued"}
+    
 
 @router.get("/train")
 async def train(user: Dict = Depends(congnito_auth.get_current_user)):
@@ -264,12 +272,10 @@ async def train(user: Dict = Depends(congnito_auth.get_current_user)):
         "user_id": user_id,
         "job_id": job_id,
         "created_at": int(time.time()),
-        "expires_at": int(time.time()) + timeout_seconds
-        
+        "expires_at": int(time.time()) + int(config.TRAINING_TIME_OUT_SEC)
     }
     await queue_manager.add_job(job)
     return {"status": "queued", "job_id": job_id}
-
 
 
 @router.post("/upload")

@@ -7,9 +7,7 @@
     <Instruction v-if="userProfileStore.isNewUser" />
 
     <template v-else>
-      <TrainAIModel v-if="!isModelExist" />
-
-      <div v-else>
+      <div>
         <h2 class="text-xl font-semibold text-gray-500 mb-4">Ask AI assistant 🤖 to help you identify...</h2>
 
         <ChooseSingleImage :chosenImage="chosenImage" @update:chosenImage="onImageChange" />
@@ -64,6 +62,7 @@ import { check_model_exist } from "@/services/upload_train";
 import TrainAIModel from "@/components/TrainAIModel.vue";
 import ChooseSingleImage from "@/components/ChooseSingleImage.vue";
 import Instruction from "@/pages/Instruction.vue";
+import { API_BASE_URL, INFERENCE_TIME_MILSEC } from "@/config/config";
 
 // Auth & Profile
 const authStore = useAuthStore();
@@ -75,6 +74,17 @@ const identifiedPerson = ref<RemindeeInfo | null>(null);
 const isModelExist = ref(false);
 const msg = ref<string | null>(null);
 const chosenImage = ref<File | null>(null);
+
+// // Watch the value and redirect when false
+// watch(
+//   isModelExist,
+//   (newVal) => {
+//     if (!newVal) {
+//       router.push("/train"); // <-- route to the page you want
+//     }
+//   },
+//   { immediate: true }
+// );
 
 // Watch for image clear
 watch(chosenImage, (newVal) => {
@@ -89,6 +99,7 @@ onMounted(async () => {
   }
   try {
     isModelExist.value = await check_model_exist(authStore.token);
+    if (!isModelExist.value) router.push("/train");
   } catch (err) {
     console.error("Error checking model existence:", err);
   }
@@ -102,11 +113,10 @@ const onImageChange = (file: File | null) => {
 // polling helper
 const pollInterval = 3000; // 3 seconds
 let startTime = Date.now();
-const timeout = 20000; // 20 seconds
 let pollingTimer: number | null = null;
 
 const pollInferenceStatus = async (job_id: string) => {
-  if (Date.now() - startTime > timeout) {
+  if (Date.now() - startTime > INFERENCE_TIME_MILSEC) {
     msg.value = "Timed out. Please try again.";
     return;
   }

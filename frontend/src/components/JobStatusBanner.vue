@@ -52,7 +52,11 @@ watch(
   (newStatus) => {
     if (newStatus == "start" || newStatus == "queued") {
       isVisible.value = true;
-    } else if ((newStatus === "complete" || newStatus === "terminate" || newStatus === "abort") && isVisible) {
+    } else if (
+      (newStatus === "complete" || newStatus === "terminate" || newStatus === "abort" || newStatus === "timeout") &&
+      isVisible
+    ) {
+      console.log("newStatus:", newStatus);
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         isVisible.value = false;
@@ -86,7 +90,7 @@ const bgColor = computed(() => {
 const message = computed(() => {
   if (isInProgress.value) return "Processing your images... Please wait.";
   if (isCompleted.value) return "Job completed successfully!";
-  if (isPending.value) return "Your job is queueing. Wait for a second.";
+  if (isPending.value) return "Your model training job is queueing. Wait for a second.";
   return "Something went wrong with your job. Please try again.";
 });
 </script>

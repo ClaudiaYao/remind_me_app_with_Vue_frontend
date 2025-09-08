@@ -16,7 +16,7 @@
     <div class="flex justify-center mt-6">
       <button
         class="flex w-64 justify-center rounded-md bg-orange-500 px-3 py-2 text-sm/6 font-semibold text-white shadow-xs hover:bg-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600"
-        :disabled="isModelUpdated"
+        :disabled="isModelDisabled"
         @click="handleTrain"
       >
         Train Your AI Assistant
@@ -31,6 +31,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useJobStore } from "@/stores/jobStore";
 import { trigger_train } from "@/services/upload_train";
+import { API_BASE_URL, TRAIN_TIMEOUT_MILSEC } from "@/config/config";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -38,7 +39,7 @@ const jobStore = useJobStore();
 
 const infoMsg = ref("");
 const errorMsg = ref("");
-const isModelUpdated = ref(false);
+const isModelDisabled = ref(false);
 
 // Redirect if user is not logged in
 watchEffect(() => {
@@ -58,7 +59,7 @@ watch(
         errorMsg.value = "Timeout: Training took too long. Please try again.";
         infoMsg.value = "";
         // Optional: trigger abort logic or UI reset
-      }, 600000); // 600 seconds
+      }, TRAIN_TIMEOUT_MILSEC);
     }
 
     if (newStatus === "complete") {
@@ -74,18 +75,23 @@ watch(
       switch (newStatus) {
         case "queued":
           infoMsg.value = "Queue... ⏳";
+          isModelDisabled.value = true;
           break;
         case "start":
           infoMsg.value = "Still processing... ⏳";
+          isModelDisabled.value = true;
           break;
         case "abort":
           errorMsg.value = "Processing failed. Please try again.";
+          isModelDisabled.value = false;
           break;
         case "timeout":
           errorMsg.value = "queueing is too long. The job expires. Please try again.";
+          isModelDisabled.value = false;
           break;
         default:
           errorMsg.value = "Unexpected response. Please try again.";
+          isModelDisabled.value = false;
           break;
       }
     }
@@ -95,16 +101,14 @@ watch(
 
 async function handleTrain() {
   try {
+    infoMsg.value = "";
+    errorMsg.value = "";
     const jobId = await trigger_train(authStore.token);
     console.log(jobId);
     jobStore.jobId = jobId;
-    infoMsg.value = "Your AI Assistant is in training process. Please wait for a while...";
-    errorMsg.value = "";
-    isModelUpdated.value = true;
   } catch (error) {
     console.error(error);
     errorMsg.value = "An error has occurred. Please try again later.";
-    isModelUpdated.value = false;
   }
 }
 </script>

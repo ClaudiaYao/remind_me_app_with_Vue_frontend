@@ -1,6 +1,6 @@
 <!-- src/layouts/RootLayout.vue -->
 <template>
-  <div class="root">
+  <div class="root safe-area">
     <!-- Use the global Pinia stores instead of nested providers -->
     <Navbar />
 
