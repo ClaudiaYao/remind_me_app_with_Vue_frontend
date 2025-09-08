@@ -243,7 +243,9 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
     print(time.time())
     print(expires_at)
     print(status)
-    if time.time() > expires_at and (status == "start" or status=="queued" or status=="idle"):
+    if expires_at is None:
+        status = "queued"
+    elif time.time() > expires_at and (status == "start" or status=="queued" or status=="idle"):
         await redis_utils.redis_client.hset(job_id, "sattus", "timeout") 
         return {"status": "timeout"}
         
