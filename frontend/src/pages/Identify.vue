@@ -59,7 +59,7 @@ import { useUserProfileStore } from "@/stores/UserProfileStore";
 import { identify, isInferenceComplete, type IdentifyResponse, type RemindeeInfo } from "@/services/identify";
 import { check_model_exist } from "@/services/upload_train";
 
-import TrainAIModel from "@/components/TrainAIModel.vue";
+// import TrainAIModel from "@/components/TrainAIModel.vue";
 import ChooseSingleImage from "@/components/ChooseSingleImage.vue";
 import Instruction from "@/pages/Instruction.vue";
 import { API_BASE_URL, INFERENCE_TIME_MILSEC } from "@/config/config";
