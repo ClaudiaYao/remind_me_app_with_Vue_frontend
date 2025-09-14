@@ -96,7 +96,7 @@ async def identify(
         except Exception as e:
             raise HTTPException("error uploading to S3:", f"{e}")
         
-        job_id = str(uuid.uuid4())
+        job_id = "job:" + str(uuid.uuid4())
         job = {
             "type": "inference",
             "user_id": user_id,
@@ -107,15 +107,10 @@ async def identify(
             "expires_at": int(time.time()) + int(config.INFERENCE_TIME_OUT_SEC)
         }
 
-    
+        await queue_manager.cancel_jobs_by_user(user_id, "inference")
         await queue_manager.add_job(job)
         return ({"status": "queued", "job_id": job_id})
 
-
-        # response_payload = sagemaker_utils.trigger_sagemaker_inference_job_new(user_id, object_key)
-        # return utils.ApiResponse(success=True,
-        #                     message="Job submitted",
-        #                     data=response_payload)
                 
     except Exception as e:
         print("error:", e)
@@ -247,6 +242,7 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
         return {"status": "timeout"}
         
     if status == "complete":
+        await redis_utils.redis_client.hset(job_id, "status", "complete")
         return {"status": "complete"}
     elif status == "start":
         await redis_utils.redis_client.hset(job_id, "status", "start")
@@ -274,7 +270,7 @@ async def train(user: Dict = Depends(congnito_auth.get_current_user)):
         "expires_at": int(time.time()) + int(config.TRAINING_TIME_OUT_SEC)
     }
     
-    await queue_manager.cancel_jobs_by_user(user_id)
+    await queue_manager.cancel_jobs_by_user(user_id, "train")
     await queue_manager.add_job(job)
     return {"status": "queued", "job_id": job_id}
 

@@ -7,6 +7,9 @@ if not config.RUNPOD_URL:
 
 async def is_idle():
     async with httpx.AsyncClient() as client:
+        if (config.RUNPOD_URL[-1] == "/"):
+            config.RUNPOD_URL = config.RUNPOD_URL[:-1]
+            
         resp = await client.get(f"{config.RUNPOD_URL}/status")
         print("run_pod status:", resp.json().get("state"))
         return resp.json().get("state")=="idle"

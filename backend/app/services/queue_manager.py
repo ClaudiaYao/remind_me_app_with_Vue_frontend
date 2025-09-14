@@ -7,7 +7,7 @@ async def add_job(job: dict):
     await redis_utils.redis_client.expire(job['job_id'], 600)  # auto-delete after 1 hour
     await redis_utils.redis_client.rpush("job_queue", job['job_id'])
 
-async def cancel_jobs_by_user(user_id: str):
+async def cancel_jobs_by_user(user_id: str, job_type: str):
     # SCAN is better than KEYS for production (doesn't block Redis)
     cursor = 0
     while True:
@@ -19,9 +19,9 @@ async def cancel_jobs_by_user(user_id: str):
                 continue
 
             # If this job belongs to the user, update its status
-            if job.get("user_id") == str(user_id):
+            if job.get("user_id") == str(user_id) and job.get("type") == job_type:
                 await redis_utils.redis_client.hset(job_id, "status", "cancelled")
-                print(f"Cancelled job {job_id} for user {user_id}")
+                print(f"Cancelled {job_type} job {job_id} for user {user_id}")
 
         if cursor == 0:
             break
