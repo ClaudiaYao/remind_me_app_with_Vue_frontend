@@ -5,7 +5,7 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 from routers import utils
 import time
-from services import LLM_utils, queue_manager, redis_utils, database, congnito_auth, s3_utils, config 
+from services import LLM_utils, queue_manager, redis_utils, database, congnito_auth, s3_utils, config
 import uuid
 import botocore
 from pathlib import Path
@@ -240,9 +240,6 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
     else:
         expires_at = None  # or handle missing case 
     
-    print(time.time())
-    print(expires_at)
-    print(status)
     if expires_at is None:
         status = "queued"
     elif time.time() > expires_at and (status == "start" or status=="queued" or status=="idle"):
@@ -268,7 +265,7 @@ async def check_training_status(job_id: str, user: Dict = Depends(congnito_auth.
 async def train(user: Dict = Depends(congnito_auth.get_current_user)):
 
     user_id = user['sub']
-    job_id = str(uuid.uuid4())
+    job_id = "job:" + str(uuid.uuid4())
     job = {
         "type": "train",
         "user_id": user_id,
@@ -276,6 +273,8 @@ async def train(user: Dict = Depends(congnito_auth.get_current_user)):
         "created_at": int(time.time()),
         "expires_at": int(time.time()) + int(config.TRAINING_TIME_OUT_SEC)
     }
+    
+    await queue_manager.cancel_jobs_by_user(user_id)
     await queue_manager.add_job(job)
     return {"status": "queued", "job_id": job_id}
 

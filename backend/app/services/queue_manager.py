@@ -2,10 +2,30 @@
 from services import redis_utils
 
 async def add_job(job: dict):
-    
+
     await redis_utils.redis_client.hset(job['job_id'], mapping=job)
+    await redis_utils.redis_client.expire(job['job_id'], 600)  # auto-delete after 1 hour
     await redis_utils.redis_client.rpush("job_queue", job['job_id'])
 
+async def cancel_jobs_by_user(user_id: str):
+    # SCAN is better than KEYS for production (doesn't block Redis)
+    cursor = 0
+    while True:
+        cursor, keys = await redis_utils.redis_client.scan(cursor=cursor, match="job:*")  # adjust prefix if jobs have one
+        for job_id in keys:
+            job = await redis_utils.redis_client.hgetall(job_id)
+            if not job:
+                # if job is None, it means this job does not exist in hash table or it has expired and gets deleted by Redis
+                continue
+
+            # If this job belongs to the user, update its status
+            if job.get("user_id") == str(user_id):
+                await redis_utils.redis_client.hset(job_id, "status", "cancelled")
+                print(f"Cancelled job {job_id} for user {user_id}")
+
+        if cursor == 0:
+            break
+        
 
 async def get_next_job():
 
