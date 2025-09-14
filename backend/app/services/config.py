@@ -25,7 +25,10 @@ DATABASE_PORT = os.getenv("DATABASE_PORT")
 
 # toggle between postgresql and sqlite
 # DATABASE_URL = f"postgresql://{DATABASE_ADMIN_NAME}:{DATABASE_PASSWORD}@{DB_INSTANCE}:{DATABASE_PORT}/{DATABASE_NAME}"
-DATABASE_URL = "sqlite:///./dev.sqlite3"
+
+sqlite3_database_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATABASE_URL = f"sqlite:///{sqlite3_database_dir}/dev.sqlite3"
+print(DATABASE_URL)
 
 # Cognito AWS
 COGNITO_USER_POOL_ID = os.getenv("COGNITO_USER_POOL_ID")

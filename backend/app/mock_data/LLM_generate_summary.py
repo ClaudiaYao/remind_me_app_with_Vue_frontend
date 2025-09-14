@@ -1,6 +1,6 @@
 
 from sqlalchemy import func
-from app.services import database, config, LLM_utils
+from services import database, config, LLM_utils
 from sqlalchemy.sql import func
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

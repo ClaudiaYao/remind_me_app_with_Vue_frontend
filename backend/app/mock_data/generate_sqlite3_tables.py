@@ -1,5 +1,10 @@
 import sqlite3
-conn = sqlite3.connect("dev.sqlite3")
+import os
+
+database_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print("database_dir:", database_dir)
+
+conn = sqlite3.connect(database_dir + "/dev.sqlite3")
 cursor = conn.cursor()
 
 # Enable foreign key constraints

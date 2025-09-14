@@ -35,7 +35,8 @@ s3_client = boto3.client("s3",
 bucket_name = config.S3_IMAGE_STORAGE_BUCKET_NAME
 
 # Directory where your images are located
-image_dir = '/Users/evansun/Documents/remindme_test_images'
+image_dir = os.path.dirname(os.path.abspath(__file__)) + "/RemindMe_dataset"
+print("image_dir:", image_dir)
 
 persons = os.listdir(image_dir)
 

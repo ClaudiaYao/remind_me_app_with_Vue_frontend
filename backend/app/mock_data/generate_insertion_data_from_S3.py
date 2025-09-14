@@ -47,6 +47,7 @@ def list_s3_objects(bucket_name):
         
         for obj in response['Contents']:
             object_key = obj['Key']
+            print("objecct_key:", object_key)
             person_code = object_key.rsplit("/", 1)[0]
             user_id = object_key.split("/")[0]
             remindee_name = object_key.split("/")[1]

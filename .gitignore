@@ -42,4 +42,6 @@ __pycache__/
 logs
 *.log
 dump.rdb
+backend/app/mock_data/RemindMe_dataset/
+
 
