@@ -37,7 +37,7 @@ async def get_next_job():
     
     if job_data.get("status") == "cancelled" or job_data.get("status") == "timeout":
         print(f"Skipping cancelled or timeout job: {job_data['job_id']}")
-        return
+        return None
     
     return job_data if job_data else None
 

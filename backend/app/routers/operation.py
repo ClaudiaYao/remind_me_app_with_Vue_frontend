@@ -10,6 +10,7 @@ import uuid
 import botocore
 from pathlib import Path
 import redis.asyncio as redis
+from routers import utils
 
 
 router = APIRouter(
@@ -87,7 +88,7 @@ async def identify(
         # else:
         # under normal conditions, will initiate sageMaker processing job. 
         # The uploaded image will always be named as the same key and prefixed with user_id, and might replace the previous image
-        image_bytes = await file.read()
+        image_bytes = await utils.normalize_file_format(file)
         user_id = user['sub']
         object_key = f"{user_id}/image.jpg"
         
@@ -289,7 +290,7 @@ async def upload_images(
 
     try:
         for file, individual_summary in zip(files, summary):
-            image_bytes = await file.read()
+            image_bytes = await utils.normalize_file_format(file)
             
             file_name = file.filename
             timestamp = int(time.time())

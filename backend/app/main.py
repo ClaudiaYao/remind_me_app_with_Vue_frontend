@@ -27,13 +27,21 @@ if config.RUNPOD_URL:
     origins.append(config.RUNPOD_URL)
 
 async def job_scheduler():
-    print("start job schedular...")
+    print("Start job scheduler...")
     while True:
-        if await runpod_client.is_idle():  # check RunPod idle
-            job = await queue_manager.get_next_job()  # get from Redis or memory
-            if job:
-                await runpod_client.submit_job(job)
-                
+        try:
+            idle = await runpod_client.is_idle()
+            print("RunPod idle:", idle)  # heartbeat log
+
+            if idle:
+                job = await queue_manager.get_next_job()
+                if job:
+                    print(f"Submitting job: {job['job_id']}")
+                    await runpod_client.submit_job(job)
+                else:
+                    continue
+        except Exception as e:
+            print("Scheduler error:", e)
         await asyncio.sleep(2)
 
 

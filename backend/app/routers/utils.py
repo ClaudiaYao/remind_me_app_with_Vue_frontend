@@ -2,7 +2,10 @@
 from pydantic import BaseModel
 from services import database
 from typing import Any, List
-
+import os, io
+import pillow_heif
+from PIL import Image
+    
 # Front end uses the model to update profile
 class UserSummaryUpdate(BaseModel):
     nick_name: str | None = None
@@ -56,3 +59,28 @@ def map_to_remindee_profile_response(db_remindee: database.UserRemindee):
         summary=db_remindee.summary if db_remindee.summary is not None else None,
         relationship=db_remindee.relationship)
     
+
+async def normalize_file_format(file):
+    file_bytes = await file.read()
+    file_ext = os.path.splitext(file.filename)[1].lower()
+    content_type = file.content_type
+
+    # Handle HEIC/HEIF -> Convert to JPG in-memory
+    if content_type in ["image/heic", "image/heif"] or file_ext in [".heic", ".heif"]:
+        heif_file = pillow_heif.read_heif(io.BytesIO(file_bytes))
+        image = Image.frombytes(
+            heif_file.mode,
+            heif_file.size,
+            heif_file.data,
+            "raw"
+        )
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG")
+        buffer.seek(0)
+
+    # For JPG, PNG, etc → upload directly
+    else:
+        buffer = io.BytesIO(file_bytes)
+        
+    return buffer
+
