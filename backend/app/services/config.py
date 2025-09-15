@@ -28,7 +28,7 @@ DATABASE_PORT = os.getenv("DATABASE_PORT")
 
 sqlite3_database_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATABASE_URL = f"sqlite:///{sqlite3_database_dir}/dev.sqlite3"
-print(DATABASE_URL)
+print("sqlite3 database url:", DATABASE_URL)
 
 # Cognito AWS
 COGNITO_USER_POOL_ID = os.getenv("COGNITO_USER_POOL_ID")

@@ -9,6 +9,8 @@ services:
       - ./backend/.env
     depends_on:
       - redis
+    volumes:
+      - ./backend/app/dev.sqlite3:/remindme_backend/app/dev.sqlite3
 
   redis:
     image: redis:7-alpine
