@@ -41,7 +41,7 @@ const emit = defineEmits(["update:chosenImage"]);
 const inputRef = ref(null);
 
 const handleClick = async () => {
-  // inputRef.value?.click();
+  inputRef.value?.click();
   try {
     const photo = await Camera.getPhoto({
       quality: 90,
