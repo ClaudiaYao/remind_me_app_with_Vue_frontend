@@ -63,6 +63,7 @@ import { check_model_exist } from "@/services/upload_train";
 import ChooseSingleImage from "@/components/ChooseSingleImage.vue";
 import Instruction from "@/pages/Instruction.vue";
 import { API_BASE_URL, INFERENCE_TIME_MILSEC } from "@/config/config";
+import { convertIfHeic } from "@/composables/userImageConversion";
 
 // Auth & Profile
 const authStore = useAuthStore();
@@ -171,7 +172,11 @@ const handleImageSubmit = async () => {
   try {
     if (!chosenImage.value) return;
     msg.value += "before identify...";
-    const response: IdentifyResponse = await identify(authStore.token, chosenImage.value);
+
+    const finalFile = await convertIfHeic(chosenImage.value);
+    console.log("final file:", finalFile);
+    console.log("chosenimage.value:", chosenImage.value);
+    const response: IdentifyResponse = await identify(authStore.token, finalFile);
     msg.value = "after getting response:" + response;
 
     if (response.status === "queued" && response.job_id) {
