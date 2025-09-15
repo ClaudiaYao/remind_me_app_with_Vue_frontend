@@ -31,6 +31,7 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 const props = defineProps({
   chosenImage: File,
@@ -39,8 +40,29 @@ const emit = defineEmits(["update:chosenImage"]);
 
 const inputRef = ref(null);
 
-const handleClick = () => {
-  inputRef.value?.click();
+const handleClick = async () => {
+  // inputRef.value?.click();
+  try {
+    const photo = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Uri, // get webPath for <img>
+      source: CameraSource.Prompt, // user can choose Camera or Gallery
+    });
+
+    if (photo.webPath) {
+      imageURL.value = photo.webPath;
+
+      // Convert it to File (so backend can receive it)
+      const response = await fetch(photo.webPath);
+      const blob = await response.blob();
+      const file = new File([blob], "photo.jpg", { type: blob.type });
+
+      emit("update:chosenImage", file);
+    }
+  } catch (err) {
+    console.error("Camera error:", err);
+  }
 };
 
 const handleImageUpload = (e) => {

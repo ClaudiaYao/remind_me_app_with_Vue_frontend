@@ -170,8 +170,9 @@ const handleImageSubmit = async () => {
 
   try {
     if (!chosenImage.value) return;
-
+    msg.value += "before identify...";
     const response: IdentifyResponse = await identify(authStore.token, chosenImage.value);
+    msg.value = "after getting response:" + response;
 
     if (response.status === "queued" && response.job_id) {
       msg.value = "Queue... Please wait ⏳";
@@ -179,7 +180,7 @@ const handleImageSubmit = async () => {
     }
   } catch (err) {
     console.error(err);
-    msg.value = "There was a problem submitting the image.";
+    msg.value = msg.value + "There was a problem submitting the image.";
   }
 };
 </script>
