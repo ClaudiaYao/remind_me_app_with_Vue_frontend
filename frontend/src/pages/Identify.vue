@@ -173,10 +173,9 @@ const handleImageSubmit = async () => {
     if (!chosenImage.value) return;
     msg.value += "before identify...";
 
-    const finalFile = await convertIfHeic(chosenImage.value);
-    console.log("final file:", finalFile);
-    console.log("chosenimage.value:", chosenImage.value);
-    const response: IdentifyResponse = await identify(authStore.token, finalFile);
+    // const finalFile = await convertIfHeic(chosenImage.value);
+
+    const response: IdentifyResponse = await identify(authStore.token, chosenImage.value);
     msg.value = "after getting response:" + response;
 
     if (response.status === "queued" && response.job_id) {

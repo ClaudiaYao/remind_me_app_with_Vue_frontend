@@ -56,7 +56,6 @@ watch(
       (newStatus === "complete" || newStatus === "terminate" || newStatus === "abort" || newStatus === "timeout") &&
       isVisible
     ) {
-      console.log("newStatus:", newStatus);
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         isVisible.value = false;
