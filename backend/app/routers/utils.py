@@ -62,6 +62,13 @@ def map_to_remindee_profile_response(db_remindee: database.UserRemindee):
 
 async def normalize_file_format(file):
     file_bytes = await file.read()
+    
+    print("Filename:", file.filename)
+    print("Content type:", file.content_type)
+    print("Size:", len(file_bytes))
+    await file.seek(0)  # reset after read
+
+
     file_ext = os.path.splitext(file.filename)[1].lower()
     content_type = file.content_type
 

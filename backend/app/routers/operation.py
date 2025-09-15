@@ -91,7 +91,7 @@ async def identify(
         image_bytes = await utils.normalize_file_format(file)
         user_id = user['sub']
         object_key = f"{user_id}/image.jpg"
-        
+        print("object_key get")
         try:
             s3_utils.s3_client.put_object(Bucket=config.S3_MODEL_WEIGHT_BUCKET_NAME, Key=object_key, Body=image_bytes, ContentType="image/jpeg")
         except Exception as e:
