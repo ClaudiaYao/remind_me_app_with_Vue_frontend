@@ -49,6 +49,7 @@ async def identify(
         if not file:
             raise HTTPException(status_code=400, detail="No files uploaded")
 
+        print("get file")
         # for demo
         # if LOCAL_INFERENCE:
         #     object_key = f"{user_id}/image.jpg"
