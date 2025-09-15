@@ -101,6 +101,7 @@ watch(
 
 async function handleTrain() {
   try {
+    timer = null;
     infoMsg.value = "";
     errorMsg.value = "";
     const jobId = await trigger_train(authStore.token);

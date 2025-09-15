@@ -166,6 +166,7 @@ const pollInferenceStatus = async (job_id: string) => {
 const handleImageSubmit = async () => {
   identifiedPerson.value = null;
   msg.value = "Sending request to queue...";
+  startTime = Date.now();
 
   try {
     if (!chosenImage.value) return;
