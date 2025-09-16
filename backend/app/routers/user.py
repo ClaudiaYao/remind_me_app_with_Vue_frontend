@@ -359,6 +359,7 @@ async def change_remindee_info(
                                                             person_name=person_name, 
                                                             image_object_key=image_object_url).first()
             
+            has_delete_items = False
             if record:
                 print("record is found:", record)
                 if remindee_upt_record.action == "delete":
@@ -366,11 +367,20 @@ async def change_remindee_info(
                     s3_utils.s3_client.delete_object(Bucket=config.S3_IMAGE_STORAGE_BUCKET_NAME, Key=f"{user_id}/{person_name}/{image_object_url}")
                     # delete the record in database
                     db.delete(record)
+                    has_delete_items = True
                     
                 elif remindee_upt_record.action == "update":
                     record.summary = remindee_upt_record.image_summary
             
                 db.commit()
+                
+                if has_delete_items:
+                    record = db.query(database.UserRemindee).filter_by(user_id=user_id, 
+                                                person_name=person_name).first()
+                    
+                    if not record:
+                        print(f"delete all the records for {person_name}")
+                        await redis_utils.redis_client.delete(f"remindee:{user_id}:{person_name}")
         return utils.ApiResponse(success=True,
             message="All the records of the remindee have been updated.",
             data=None)

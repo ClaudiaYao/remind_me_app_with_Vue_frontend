@@ -28,20 +28,23 @@ if config.RUNPOD_URL:
 
 async def job_scheduler():
     print("Start job scheduler...")
+    idle = False
     while True:
         try:
             idle = await runpod_client.is_idle()
             print("RunPod idle:", idle)  # heartbeat log
-
+        except Exception as e:
+            print("Could not connect to RunPod")
+            
+        try:
             if idle:
                 job = await queue_manager.get_next_job()
                 if job:
                     print(f"Submitting job: {job['job_id']}")
                     await runpod_client.submit_job(job)
-                else:
-                    continue
         except Exception as e:
             print("Scheduler error:", e)
+
         await asyncio.sleep(2)
 
 

@@ -4,8 +4,9 @@ from services import redis_utils
 async def add_job(job: dict):
 
     await redis_utils.redis_client.hset(job['job_id'], mapping=job)
-    await redis_utils.redis_client.expire(job['job_id'], 600)  # auto-delete after 1 hour
     await redis_utils.redis_client.rpush("job_queue", job['job_id'])
+    await redis_utils.redis_client.expire(job['job_id'], 600)  # auto-delete after 10 mins.
+    
 
 async def cancel_jobs_by_user(user_id: str, job_type: str):
     # SCAN is better than KEYS for production (doesn't block Redis)
@@ -28,16 +29,25 @@ async def cancel_jobs_by_user(user_id: str, job_type: str):
         
 
 async def get_next_job():
-
-    job_id = await redis_utils.redis_client.lpop("job_queue")
-    if not job_id:
-        return
-
-    job_data = await redis_utils.redis_client.hgetall(job_id)
     
-    if job_data.get("status") == "cancelled" or job_data.get("status") == "timeout":
-        print(f"Skipping cancelled or timeout job: {job_data['job_id']}")
-        return None
-    
-    return job_data if job_data else None
+    job_data = None
+    while (True): 
+        job_id = await redis_utils.redis_client.lpop("job_queue")
+        if not job_id:
+            print("the redis queue is empty.")
+            return
+
+        job_data = await redis_utils.redis_client.hgetall(job_id)
+        
+        # if the job does not exist due to expiration, then remove this item in the job queue to clean up the queue
+        if not job_data:
+            redis_utils.redis_client.lrem("job_queue", 1, job_id)
+            continue
+            
+        if job_data.get("status") == "cancelled" or job_data.get("status") == "timeout":
+            print(f"Skipping cancelled or timeout job: {job_data['job_id']}")
+            continue
+        else:
+            return job_data
+
 

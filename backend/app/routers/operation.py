@@ -173,6 +173,10 @@ async def check_inference_status(job_id: str, user: Dict = Depends(congnito_auth
                         "summary": inference_result['ai_summary'],
                         "image": inference_result['image_url']}
                     }
+    elif "model-nonexist" in status:
+        await redis_utils.redis_client.hset(job_id, "sattus", "abort") 
+        return {"status": "model-nonexist", "person": None}
+    
     # if the job is still pending or starts, but time has expired, then set status to abort
     expires_at_str = await redis_utils.redis_client.hget(job_id, "expires_at")
 
@@ -319,12 +323,13 @@ async def upload_images(
         # sometimes the LLM will generate strange comment
         image_obj_key = f"{user_id}/{person_name}/{image_obj_key}"
         presigned_url = s3_utils.get_image_url_from_s3(image_obj_key)['presigned_url']
-    
+        
         return utils.ApiResponse(success=True,
                 message="images and info are saved to database.",
                 data={"person": person_name,
                         "summary": ai_summary,
                         "image": presigned_url})
+        
     except Exception as e:
         raise HTTPException(400, f"{e}")
 

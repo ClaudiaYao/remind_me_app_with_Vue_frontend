@@ -135,7 +135,7 @@ const pollInferenceStatus = async (job_id: string) => {
           if (result.data) identifiedPerson.value = result.data;
           else identifiedPerson.value = null;
         }
-        msg.value = null; // Clear status message
+        msg.value = null;
         break;
 
       case "queued":
@@ -149,6 +149,9 @@ const pollInferenceStatus = async (job_id: string) => {
 
       case "abort":
         msg.value = "Processing failed. Please try again.";
+        break;
+      case "model-nonexist":
+        msg.value = "📌 Please train your AI Assistant first 📌";
         break;
       case "timeout":
         msg.value = "queueing is too long. The job expires. Please try again.";

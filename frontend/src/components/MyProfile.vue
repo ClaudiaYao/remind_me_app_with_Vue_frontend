@@ -3,16 +3,17 @@ import { ref, watch, computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserProfileStore } from "@/stores/UserProfileStore";
 import { updateProfile } from "@/services/profile";
+import { useRouter } from "vue-router";
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const preview = ref<string | undefined>();
 const selectedFile = ref<File | null>(null);
 const errorMessage = ref<string | null>(null);
 const isSaving = ref(false);
-const isDisabled = ref(true);
 
 const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
+const router = useRouter();
 
 // Reactive references
 const userSummary = computed(() => userProfileStore.userProfile?.user_summary);
@@ -50,12 +51,7 @@ function handleFileChange(e: Event) {
   if (file) {
     selectedFile.value = file;
     preview.value = URL.createObjectURL(file);
-    isDisabled.value = false;
   }
-}
-
-function handleInput() {
-  isDisabled.value = false;
 }
 
 async function handleSave() {
@@ -73,7 +69,7 @@ async function handleSave() {
     errorMessage.value = "Failed to update profile. Please try again later.";
   } finally {
     isSaving.value = false;
-    isDisabled.value = true;
+    router.push("/");
   }
 }
 
@@ -83,7 +79,7 @@ function handleCancel() {
     preview.value = avatar.value;
   }
   selectedFile.value = null;
-  isDisabled.value = true;
+  router.push("/");
 }
 </script>
 
@@ -111,54 +107,24 @@ function handleCancel() {
       <!-- Form Fields -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mt-4">Nickname:</label>
-        <input
-          class="w-full p-2 border border-gray-300 rounded"
-          type="text"
-          v-model="editedSummary.nick_name"
-          @input="handleInput"
-        />
+        <input class="w-full p-2 border border-gray-300 rounded" type="text" v-model="editedSummary.nick_name" />
 
         <label class="block text-sm font-medium text-gray-700 mt-4">Age:</label>
-        <input
-          class="w-full p-2 border border-gray-300 rounded"
-          type="number"
-          v-model.number="editedSummary.age"
-          @input="handleInput"
-        />
+        <input class="w-full p-2 border border-gray-300 rounded" type="number" v-model.number="editedSummary.age" />
 
         <label class="block text-sm font-medium text-gray-700 mt-4">Description:</label>
-        <input
-          class="w-full p-2 border border-gray-300 rounded"
-          type="text"
-          v-model="editedSummary.description"
-          @input="handleInput"
-        />
+        <input class="w-full p-2 border border-gray-300 rounded" type="text" v-model="editedSummary.description" />
 
         <label class="block text-sm font-medium text-gray-700 mt-4">Phone Number:</label>
-        <input
-          class="w-full p-2 border border-gray-300 rounded"
-          type="text"
-          v-model="editedSummary.phone_number"
-          @input="handleInput"
-        />
+        <input class="w-full p-2 border border-gray-300 rounded" type="text" v-model="editedSummary.phone_number" />
 
         <div v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</div>
       </div>
 
       <!-- Buttons -->
       <div class="flex justify-end space-x-2 mt-6">
-        <button
-          :disabled="isDisabled"
-          @click="handleCancel"
-          :class="isDisabled ? 'bg-gray-400 cursor-not-allowed' : ' text-white bg-orange-400 px-4 py-2 rounded'"
-        >
-          Cancel
-        </button>
-        <button
-          :disabled="isDisabled"
-          @click="handleSave"
-          :class="isDisabled ? 'bg-gray-400 cursor-not-allowed' : ' text-white bg-orange-500 px-4 py-2 rounded'"
-        >
+        <button @click="handleCancel" class="text-white bg-orange-400 px-4 py-2 rounded">Cancel</button>
+        <button @click="handleSave" class="text-white bg-orange-500 px-4 py-2 rounded">
           {{ isSaving ? "Saving..." : "Save" }}
         </button>
       </div>

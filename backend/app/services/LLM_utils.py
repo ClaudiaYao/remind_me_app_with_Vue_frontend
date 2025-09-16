@@ -66,11 +66,16 @@ def get_accumulated_descriptions_for_remindee(user_id, remindee_name):
                 func.group_concat(func.distinct(database.UserRemindee.summary)).label("accumulated_summary")
                 ).filter(database.UserRemindee.user_id == user_id, database.UserRemindee.person_name == remindee_name).first()
         
-        return ', '.join(results[0]), ", ".join(results[1])
+        if results:
+            return ', '.join(results[0]), ", ".join(results[1])
+        else:
+            return "", ""
+
     except Exception as e:
         print(f"{e}")
     finally:
         db.close() 
+        return "", ""
     
 # generate summary for remindee, meanwhile, update database
 def generate_summary_for_remindee(user_id, remindee_name, relationship, accumulated_summary):
@@ -105,16 +110,25 @@ def generate_summary_for_remindee(user_id, remindee_name, relationship, accumula
         return gen_summary, result.image_object_key
     except Exception as e:
         print(f"{e}")
+        return None, None
     finally:
         db.close()
         
         
 def get_summary(user_id, remindee_name):
+
     relationship, accumulated_summary = get_accumulated_descriptions_for_remindee(user_id, remindee_name)
     ai_summary, image_obj_key  = generate_summary_for_remindee(user_id, remindee_name, relationship, accumulated_summary)
 
-    image_obj_key = f"{user_id}/{remindee_name}/{image_obj_key}"
-    presigned_url = s3_utils.get_image_url_from_s3(image_obj_key)['presigned_url']
+    if not ai_summary:
+        ai_summary = ""
+        
+    if not image_obj_key:
+        image_obj_key = ""
+        presigned_url = ""
+    else:
+        image_obj_key = f"{user_id}/{remindee_name}/{image_obj_key}"
+        presigned_url = s3_utils.get_image_url_from_s3(image_obj_key)['presigned_url']
     
     remindee_info = {"name": remindee_name,
                      "relationship": relationship.strip(),
