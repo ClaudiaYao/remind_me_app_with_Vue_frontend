@@ -26,7 +26,7 @@ fi
 echo "Current working directory: $(pwd)"
 
 # Step 3: Create .env file
-echo "🔑 Create your .env file. Enter contents and press Ctrl+D when done:"
-cat > .env
+echo "🔑 Create your .env.production file. Enter contents and press Ctrl+D when done:"
+cat > .env.production
 
-echo "✅ Setup complete. .env file created and project cloned."
+echo "✅ Setup complete. .env.production file created and project cloned."
